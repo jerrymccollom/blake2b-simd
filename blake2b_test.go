@@ -96,55 +96,51 @@ func TestGoldenMarshal(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for i, g := range tt.gold {
-				h := tt.newHash()
-				h2 := tt.newHash()
+		for i, g := range tt.gold {
+			h := tt.newHash()
+			h2 := tt.newHash()
 
-				io.WriteString(h, g[:len(g)/2])
+			io.WriteString(h, g[:len(g)/2])
 
-				state, err := h.(encoding.BinaryMarshaler).MarshalBinary()
-				if err != nil {
-					t.Errorf("could not marshal: %v", err)
-					continue
-				}
-
-				tt.halfState[i] = string(state)
-
-				if err := h2.(encoding.BinaryUnmarshaler).UnmarshalBinary(state); err != nil {
-					t.Errorf("could not unmarshal: %v", err)
-					continue
-				}
-
-				io.WriteString(h, g[len(g)/2:])
-				io.WriteString(h2, g[len(g)/2:])
-
-				if actual, actual2 := h.Sum(nil), h2.Sum(nil); !bytes.Equal(actual, actual2) {
-					t.Errorf("sha%s(%q) = 0x%x != marshaled 0x%x", tt.name, g, actual, actual2)
-				}
+			state, err := h.(encoding.BinaryMarshaler).MarshalBinary()
+			if err != nil {
+				t.Errorf("could not marshal: %v", err)
+				continue
 			}
-		})
+
+			tt.halfState[i] = string(state)
+
+			if err := h2.(encoding.BinaryUnmarshaler).UnmarshalBinary(state); err != nil {
+				t.Errorf("could not unmarshal: %v", err)
+				continue
+			}
+
+			io.WriteString(h, g[len(g)/2:])
+			io.WriteString(h2, g[len(g)/2:])
+
+			if actual, actual2 := h.Sum(nil), h2.Sum(nil); !bytes.Equal(actual, actual2) {
+				t.Errorf("sha%s(%q) = 0x%x != marshaled 0x%x", tt.name, g, actual, actual2)
+			}
+		}
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for i, g := range tt.gold {
-				h := tt.newHash()
-				h2 := tt.newHash()
+		for i, g := range tt.gold {
+			h := tt.newHash()
+			h2 := tt.newHash()
 
-				io.WriteString(h, g)
+			io.WriteString(h, g)
 
-				if err := h2.(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte(tt.halfState[i])); err != nil {
-					t.Errorf("could not unmarshal: %v", err)
-					continue
-				}
-				io.WriteString(h2, g[len(g)/2:])
-
-				if actual, actual2 := h.Sum(nil), h2.Sum(nil); !bytes.Equal(actual, actual2) {
-					t.Errorf("sha%s(%q) = 0x%x != marshaled 0x%x", tt.name, g, actual, actual2)
-				}
+			if err := h2.(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte(tt.halfState[i])); err != nil {
+				t.Errorf("could not unmarshal: %v", err)
+				continue
 			}
-		})
+			io.WriteString(h2, g[len(g)/2:])
+
+			if actual, actual2 := h.Sum(nil), h2.Sum(nil); !bytes.Equal(actual, actual2) {
+				t.Errorf("sha%s(%q) = 0x%x != marshaled 0x%x", tt.name, g, actual, actual2)
+			}
+		}
 	}
 
 }
